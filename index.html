@@ -2,121 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cube Graph Lab</title>
-  <meta name="description" content="Turn a 3×3 cube and watch your route through its state graph.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%230b0d12' d='M6 16 32 2l26 14v32L32 62 6 48z'/%3E%3Cpath fill='%236ee7ff' d='m10 18 20 11v25L10 44z'/%3E%3Cpath fill='%238b5cf6' d='m54 18-20 11v25l20-10z'/%3E%3Cpath fill='%23f8fafc' d='M12 15 32 5l20 10-20 11z'/%3E%3C/svg%3E">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Rubik's Ring Graph</title>
   <style>
-    :root{--bg:#080a0f;--panel:#11141c;--line:#292e3b;--text:#f6f7fb;--muted:#9aa3b5;--cyan:#6ee7ff;--violet:#8b5cf6;--orange:#ff9f43;--green:#44d69c;--danger:#ff607c}
-    *{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100vh;background:radial-gradient(circle at 12% 4%,#172137 0,transparent 29%),radial-gradient(circle at 90% 85%,#20153d 0,transparent 28%),var(--bg);color:var(--text);font:16px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    button,input{font:inherit}.app{max-width:1440px;margin:auto;padding:24px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:12px}.logo{width:38px;height:38px;display:grid;place-items:center;border:1px solid #394155;background:#161b26;border-radius:11px;color:var(--cyan);font-weight:900;box-shadow:0 8px 30px #0008}.brand h1{font-size:1.08rem;margin:0;letter-spacing:.01em}.brand p{margin:1px 0 0;color:var(--muted);font-size:.82rem}.status{display:flex;gap:9px;align-items:center;color:var(--muted);font-size:.88rem}.dot{width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 12px var(--orange)}.dot.solved{background:var(--green);box-shadow:0 0 12px var(--green)}
-    .workspace{display:grid;grid-template-columns:minmax(430px,1.25fr) minmax(350px,.9fr);gap:16px}.panel{position:relative;background:linear-gradient(145deg,#141822ed,#0d1017f5);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 60px #0007;overflow:hidden}.cube-panel{min-height:660px;display:flex;flex-direction:column}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;padding:19px 20px 0;gap:12px}.eyebrow{color:var(--cyan);font-size:.73rem;font-weight:800;text-transform:uppercase;letter-spacing:.14em}.panel h2{font-size:1.08rem;margin:4px 0 0}.help{color:var(--muted);font-size:.78rem;text-align:right;max-width:185px}
-    .stage{position:relative;flex:1;min-height:390px;display:grid;place-items:center;perspective:900px;cursor:grab;touch-action:none;user-select:none}.stage:active{cursor:grabbing}.halo{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,#6ee7ff1b 0,transparent 68%);filter:blur(8px)}.scene{position:relative;width:0;height:0;transform-style:preserve-3d;transform:rotateX(-25deg) rotateY(36deg)}.cubie{position:absolute;width:58px;height:58px;margin:-29px;transform-style:preserve-3d;transition:transform .2s cubic-bezier(.2,.8,.2,1)}.face{position:absolute;inset:2px;border:3px solid #090b0f;border-radius:7px;backface-visibility:hidden;box-shadow:inset 0 0 13px #fff2}.f-zp{transform:translateZ(29px)}.f-zn{transform:rotateY(180deg) translateZ(29px)}.f-xp{transform:rotateY(90deg) translateZ(29px)}.f-xn{transform:rotateY(-90deg) translateZ(29px)}.f-yp{transform:rotateX(-90deg) translateZ(29px)}.f-yn{transform:rotateX(90deg) translateZ(29px)}
-    .turns{padding:0 20px 20px}.move-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.move{min-height:45px;border:1px solid #343b4b;border-radius:11px;color:var(--text);background:#1a1f2b;font-weight:800;cursor:pointer;box-shadow:0 4px 0 #07090d;transition:transform .1s,border-color .1s,background .1s}.move:hover{border-color:var(--cyan);background:#202738}.move:active{transform:translateY(3px);box-shadow:0 1px 0 #07090d}.move small{display:block;color:var(--muted);font-size:.62rem;font-weight:600}.prime{color:#c4b5fd}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.action{border:1px solid #343b4b;border-radius:10px;background:transparent;color:var(--text);padding:9px;cursor:pointer}.action:hover{background:#1a1f2b}.action.primary{border-color:#6ee7ff88;background:#6ee7ff14;color:#baf5ff}.action:disabled{opacity:.38;cursor:not-allowed}
-    .side{display:grid;grid-template-rows:minmax(360px,1fr) auto;gap:16px}.graph-panel{min-height:420px}.graph-wrap{padding:8px 14px 4px;height:330px}.graph-wrap svg{width:100%;height:100%;display:block}.ring{fill:none;stroke:#32394a;stroke-width:1;stroke-dasharray:3 6}.path{fill:none;stroke:url(#pathGradient);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.node{stroke:#080a0f;stroke-width:3;cursor:pointer}.node:hover{stroke:#fff}.depth-label{fill:#727d91;font-size:11px}.graph-note{padding:0 18px 16px;color:var(--muted);font-size:.8rem}.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.stat{padding:13px 10px;text-align:center}.stat+.stat{border-left:1px solid var(--line)}.stat b{display:block;font-size:1.25rem}.stat span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.challenge{padding:18px}.challenge-row{display:flex;align-items:center;gap:12px;margin-top:12px}.challenge input{flex:1;accent-color:var(--cyan)}.challenge output{min-width:2ch;text-align:right;font-weight:800}.known-route{margin-top:13px;padding:12px 13px;background:#0b0e14;border:1px solid #252b38;border-radius:11px;min-height:49px;color:#cfd5e2;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;word-break:break-word}.tiny{color:var(--muted);font-size:.73rem;margin:9px 0 0}.kbd{border:1px solid #40485a;border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:#ccd3e0;background:#1a1f2a;font-size:.72rem}
-    .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);padding:10px 15px;background:#f4f7fb;color:#11141c;border-radius:999px;font-weight:700;font-size:.85rem;opacity:0;pointer-events:none;transition:.2s;z-index:10}.toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:900px){.app{padding:14px}.workspace{grid-template-columns:1fr}.cube-panel{min-height:620px}.side{grid-template-columns:1fr 1fr;grid-template-rows:auto}.move-grid{grid-template-columns:repeat(6,1fr)}}
-    @media(max-width:650px){.topbar{align-items:flex-start}.status{display:none}.panel-head{padding:16px 15px 0}.help{display:none}.cube-panel{min-height:590px}.stage{min-height:360px}.turns{padding:0 12px 15px}.move-grid{grid-template-columns:repeat(3,1fr)}.side{grid-template-columns:1fr}.graph-panel{min-height:410px}.actions{grid-template-columns:1fr 1fr}.actions .wide{grid-column:1/-1}}
+    :root{--bg:#090b10;--panel:#131722;--line:#2d3444;--text:#f5f7fb;--muted:#9da7b8;--cyan:#50dff8}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0,#17243a,transparent 30%),var(--bg);color:var(--text);font:16px/1.4 system-ui,sans-serif}
+    button,input{font:inherit}.app{max-width:1320px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.top h1{font-size:1.15rem;margin:0}.top p{margin:2px 0 0;color:var(--muted);font-size:.84rem}.status{color:var(--muted);font-size:.85rem}
+    .layout{display:grid;grid-template-columns:minmax(590px,1.35fr) minmax(330px,.65fr);gap:15px}.panel{background:linear-gradient(145deg,#151a25,#0e1118);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 18px 55px #0007}.head{padding:16px 18px 8px}.head h2{font-size:1rem;margin:0}.head p{margin:4px 0 0;color:var(--muted);font-size:.8rem}
+    .board-wrap{padding:0 12px 12px}.board{display:block;width:100%;background:#fff;border-radius:14px}.ring{fill:none;stroke-width:1.7}.ring-hit{fill:none;stroke:transparent;stroke-width:18;cursor:pointer}.ring-hit:hover+.ring{stroke-width:4;filter:drop-shadow(0 0 4px #0ba9c9)}.bead{stroke:#17191f;stroke-width:2;pointer-events:none}.face-label{fill:#586170;font-size:12px;font-weight:900;pointer-events:none}.family-label{fill:#323a48;font-size:11px;font-weight:900;pointer-events:none}
+    .controls{padding:17px}.controls h2{font-size:1rem;margin:0 0 6px}.note{color:var(--muted);font-size:.8rem}.family{margin-top:15px}.family-title{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:7px}.family-title span{color:var(--muted)}.move-row{display:grid;grid-template-columns:1fr 46px 46px;gap:7px;margin-top:7px}.move-name,.move{border:1px solid #353d4e;border-radius:10px;background:#171c27;color:var(--text);padding:9px}.move{cursor:pointer;font-weight:900}.move:hover{border-color:var(--cyan);background:#212938}.move-name b{color:#fff}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:17px}.action{border:1px solid #3a4355;border-radius:10px;background:transparent;color:var(--text);padding:10px;cursor:pointer}.action.primary{grid-column:1/-1;border-color:#50dff888;background:#50dff814}.action:disabled{opacity:.4}.depth{display:flex;align-items:center;gap:10px;margin-top:15px;color:var(--muted);font-size:.82rem}.depth input{flex:1;accent-color:var(--cyan)}.stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:15px;border:1px solid var(--line);border-radius:11px;overflow:hidden}.stat{text-align:center;padding:10px 4px;background:#0b0e14}.stat+.stat{border-left:1px solid var(--line)}.stat b{display:block;font-size:1.15rem}.stat span{color:var(--muted);font-size:.65rem;text-transform:uppercase}.route{margin-top:10px;padding:10px;min-height:42px;border:1px solid var(--line);border-radius:9px;background:#090c11;color:#d8deea;font:13px/1.5 ui-monospace,monospace}.legend{padding:0 15px 15px;color:var(--muted);font-size:.78rem;text-align:center}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,15px);background:#fff;color:#111;padding:9px 14px;border-radius:999px;font-weight:800;font-size:.83rem;opacity:0;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:880px){.layout{grid-template-columns:1fr}}@media(max-width:620px){.app{padding:10px}.status{display:none}.board-wrap{padding:0 5px 6px}.controls{padding:14px}}
   </style>
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand"><div class="logo">G³</div><div><h1>Cube Graph Lab</h1><p>Every position is a vertex. Every turn is an edge.</p></div></div>
-      <div class="status"><span id="statusDot" class="dot solved"></span><span id="statusText">Solved state</span></div>
-    </header>
-    <section class="workspace">
-      <article class="panel cube-panel">
-        <div class="panel-head"><div><div class="eyebrow">Interactive cube</div><h2>Turn a face, traverse an edge</h2></div><div class="help">Drag to rotate the view. Keys <span class="kbd">U</span>–<span class="kbd">B</span> turn faces; hold Shift for prime.</div></div>
-        <div id="stage" class="stage" aria-label="Interactive three-dimensional Rubik's cube"><div class="halo"></div><div id="scene" class="scene"></div></div>
-        <div class="turns">
-          <div id="moveGrid" class="move-grid"></div>
-          <div class="actions">
-            <button id="undoBtn" class="action" type="button">Undo edge</button>
-            <button id="resetBtn" class="action" type="button">Reset solved</button>
-            <button id="scrambleBtn" class="action primary wide" type="button">New scramble</button>
-          </div>
-        </div>
-      </article>
-      <aside class="side">
-        <article class="panel graph-panel">
-          <div class="panel-head"><div><div class="eyebrow">Live state graph</div><h2>Your search path</h2></div><div class="help">Click an earlier node to rewind.</div></div>
-          <div class="graph-wrap"><svg id="graph" viewBox="0 0 420 310" role="img" aria-label="Concentric graph rings showing the moves explored"></svg></div>
-          <div class="stats"><div class="stat"><b id="moveCount">0</b><span>moves</span></div><div class="stat"><b id="uniqueCount">1</b><span>states seen</span></div><div class="stat"><b id="depthCount">0</b><span>path depth</span></div></div>
-          <p class="graph-note">The rings show depth from the scramble you started with. They do not claim the true distance to solved unless every shorter branch has been checked.</p>
-        </article>
-        <article class="panel challenge">
-          <div class="eyebrow">Practice setup</div><h2>Scramble depth</h2>
-          <div class="challenge-row"><span>3</span><input id="depth" type="range" min="3" max="20" value="7" aria-label="Scramble length"><span>20</span><output id="depthOut">7</output></div>
-          <button id="routeBtn" class="action" type="button" style="width:100%;margin-top:12px">Reveal a known return route</button>
-          <div id="knownRoute" class="known-route">Route hidden</div>
-          <p class="tiny">The return route reverses the generated scramble. It is a valid upper bound, but it may not be the absolute shortest solution.</p>
-        </article>
-      </aside>
-    </section>
-  </main>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<main class="app">
+  <header class="top"><div><h1>Rubik's Ring Graph</h1><p>Nine rings · 54 intersection beads · no hidden 3D cube</p></div><div id="status" class="status">Solved</div></header>
+  <section class="layout">
+    <article class="panel">
+      <div class="head"><h2>Turn the rings</h2><p>Each ring contains 12 beads. A move shifts them by three intersection points. Click for the named move; Shift-click or right-click for prime.</p></div>
+      <div class="board-wrap"><svg id="board" class="board" viewBox="0 0 640 640" aria-label="Interactive graph of nine intersecting rings"></svg></div>
+      <div class="legend">White top · green centre-left · red centre-right · orange outer-left · blue outer-right · yellow bottom</div>
+    </article>
+    <aside class="panel controls">
+      <h2>Ring moves</h2><div class="note">Standard labels are attached to the nine rings: R L U D F B and M E S.</div>
+      <div id="families"></div>
+      <div class="depth"><span>Scramble</span><input id="depth" type="range" min="3" max="20" value="7"><output id="depthOut">7</output></div>
+      <div class="actions"><button id="undo" class="action">Undo</button><button id="reset" class="action">Reset</button><button id="scramble" class="action primary">New scramble</button></div>
+      <div class="stats"><div class="stat"><b id="moves">0</b><span>moves</span></div><div class="stat"><b id="seen">1</b><span>states</span></div><div class="stat"><b id="wrong">0</b><span>moved beads</span></div></div>
+      <button id="routeBtn" class="action" style="width:100%;margin-top:14px">Reveal return route</button><div id="route" class="route">Route hidden</div>
+    </aside>
+  </section>
+</main><div id="toast" class="toast"></div>
 <script>
 (() => {
-  const COLORS={xp:'#e53935',xn:'#ff8a26',yp:'#f5f5f5',yn:'#ffd928',zp:'#28b463',zn:'#2979ff'};
-  const NORMALS={xp:[1,0,0],xn:[-1,0,0],yp:[0,1,0],yn:[0,-1,0],zp:[0,0,1],zn:[0,0,-1]};
-  const FACES={R:{axis:0,layer:1,q:1},L:{axis:0,layer:-1,q:-1},U:{axis:1,layer:1,q:1},D:{axis:1,layer:-1,q:-1},F:{axis:2,layer:1,q:-1},B:{axis:2,layer:-1,q:1}};
-  const scene=document.querySelector('#scene'),graph=document.querySelector('#graph'),toast=document.querySelector('#toast');
-  let cubies=[],history=[],seen=new Set(),knownSolution=[],routeShown=false,moves=0,viewX=-25,viewY=36,drag=null,busy=false;
-  function makeSolved(){
-    const list=[];let id=0;
-    for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
-      if(x===0&&y===0&&z===0)continue;
-      const stickers=[];
-      for(const [key,n] of Object.entries(NORMALS))if((n[0]&&x===n[0])||(n[1]&&y===n[1])||(n[2]&&z===n[2]))stickers.push({n:[...n],color:COLORS[key]});
-      list.push({id:id++,p:[x,y,z],home:[x,y,z],stickers,homeStickers:stickers.map(s=>({n:[...s.n],color:s.color}))});
-    }return list;
+  const CENTERS=[[320,220],[210,410.5],[430,410.5]], RADII=[154,180,206], LINE=['#00a7c7','#8b5cf6','#ff8b3d'];
+  const COLORS={white:'#f4f4f4',yellow:'#ffe02b',green:'#25d65b',blue:'#1666e8',red:'#ee2838',orange:'#ff8a24'};
+  const DEFS=[
+    {axis:0,ring:0,name:'D',q:-1},{axis:0,ring:1,name:'E',q:-1},{axis:0,ring:2,name:'U',q:1},
+    {axis:1,ring:0,name:'F',q:1},{axis:1,ring:1,name:'S',q:1},{axis:1,ring:2,name:'B',q:-1},
+    {axis:2,ring:0,name:'R',q:-1},{axis:2,ring:1,name:'M',q:1},{axis:2,ring:2,name:'L',q:1}
+  ];
+  const FAMILY_NAMES=['D · E · U','F · S · B','R · M · L'], board=document.querySelector('#board');
+  let slots=[],history=[],seen=new Set(),moves=0,known=[],routeShown=false;
+
+  function intersection(c1,r1,c2,r2,branch){
+    const dx=c2[0]-c1[0],dy=c2[1]-c1[1],d=Math.hypot(dx,dy),a=(r1*r1-r2*r2+d*d)/(2*d),h=Math.sqrt(r1*r1-a*a);
+    const mx=c1[0]+a*dx/d,my=c1[1]+a*dy/d;
+    return [mx+branch*h*(-dy/d),my+branch*h*(dx/d)];
   }
-  const cloneState=state=>state.map(c=>({...c,p:[...c.p],home:[...c.home],stickers:c.stickers.map(s=>({n:[...s.n],color:s.color})),homeStickers:c.homeStickers.map(s=>({n:[...s.n],color:s.color}))}));
-  function keyOf(state=cubies){return state.slice().sort((a,b)=>a.id-b.id).map(c=>`${c.p.join('')}:${c.stickers.map(s=>s.color+s.n.join('')).sort().join('.')}`).join('|')}
-  function rot(v,axis,q){let [x,y,z]=v;if(axis===0)return q>0?[x,-z,y]:[x,z,-y];if(axis===1)return q>0?[z,y,-x]:[-z,y,x];return q>0?[-y,x,z]:[y,-x,z]}
-  function applyMove(token,record=true){
-    if(busy)return;const face=token[0],prime=token.includes("'"),twice=token.includes('2'),cfg=FACES[face];if(!cfg)return;
-    const turns=twice?2:1,q=cfg.q*(prime?-1:1);
-    for(let k=0;k<turns;k++)for(const c of cubies)if(c.p[cfg.axis]===cfg.layer){c.p=rot(c.p,cfg.axis,q);for(const s of c.stickers)s.n=rot(s.n,cfg.axis,q)}
-    moves++;seen.add(keyOf());if(record)history.push({state:cloneState(cubies),move:token});render();
-    if(isSolved()){flash('Solved! You reached the goal vertex.');document.querySelector('#statusDot').classList.add('solved')}
+  function faceFor(a,b,branch){
+    if(a===1&&b===2)return branch<0?['U',COLORS.white]:['D',COLORS.yellow];
+    if(a===0&&b===2)return branch>0?['F',COLORS.green]:['B',COLORS.blue];
+    return branch<0?['R',COLORS.red]:['L',COLORS.orange];
   }
-  function isSolved(){return cubies.every(c=>c.p.every((v,i)=>v===c.home[i])&&c.stickers.every(s=>c.homeStickers.some(h=>h.color===s.color&&h.n.every((v,i)=>v===s.n[i]))))}
-  function normalClass(n){return n[0]===1?'xp':n[0]===-1?'xn':n[1]===1?'yp':n[1]===-1?'yn':n[2]===1?'zp':'zn'}
-  function renderCube(){
-    scene.innerHTML='';for(const c of cubies){const el=document.createElement('div');el.className='cubie';el.style.transform=`translate3d(${c.p[0]*62}px,${-c.p[1]*62}px,${c.p[2]*62}px)`;for(const s of c.stickers){const f=document.createElement('div');f.className=`face f-${normalClass(s.n)}`;f.style.background=s.color;el.appendChild(f)}scene.appendChild(el)}
-    scene.style.transform=`rotateX(${viewX}deg) rotateY(${viewY}deg)`;
+  function makeSlots(){
+    const out=[];let id=0;
+    for(let a=0;a<3;a++)for(let b=a+1;b<3;b++)for(let ra=0;ra<3;ra++)for(let rb=0;rb<3;rb++)for(const branch of [-1,1]){
+      const [face,color]=faceFor(a,b,branch),[x,y]=intersection(CENTERS[a],RADII[ra],CENTERS[b],RADII[rb],branch);
+      out.push({id:id++,x,y,face,color,home:color,members:[`${a}-${ra}`,`${b}-${rb}`]});
+    }
+    return out;
   }
-  function renderGraph(){
-    const cx=210,cy=152,maxDepth=Math.max(4,history.length-1),step=Math.min(33,122/maxDepth);let svg=`<defs><linearGradient id="pathGradient"><stop stop-color="#6ee7ff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>`;
-    for(let d=1;d<=maxDepth;d++){const r=d*step;svg+=`<circle class="ring" cx="${cx}" cy="${cy}" r="${r}"/><text class="depth-label" x="${cx+5}" y="${cy-r+12}">${d}</text>`}
-    const pts=history.map((h,i)=>{if(i===0)return[cx,cy];const a=-Math.PI/2+(i-1)*2.28,r=i*step;return[cx+Math.cos(a)*r,cy+Math.sin(a)*r]});
-    if(pts.length>1)svg+=`<polyline class="path" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
-    pts.forEach((p,i)=>{const solved=i===history.length-1&&isSolved();svg+=`<circle class="node" data-i="${i}" cx="${p[0]}" cy="${p[1]}" r="${i===history.length-1?8:6}" fill="${solved?'#44d69c':i===history.length-1?'#8b5cf6':'#6ee7ff'}"><title>${i===0?'Start':`Depth ${i}: ${history[i].move}`}</title></circle>`});graph.innerHTML=svg;
-    graph.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>rewind(+n.dataset.i)));
+  const defFor=(axis,ring)=>DEFS.find(d=>d.axis===axis&&d.ring===ring);
+  const key=()=>slots.map(s=>s.color).join('|');
+  const wrong=()=>slots.filter(s=>s.color!==s.home).length;
+  const solved=()=>wrong()===0;
+  const snapshot=()=>slots.map(s=>s.color);
+  function restore(colors){slots.forEach((s,i)=>s.color=colors[i])}
+  function ringSlots(axis,ring){
+    const k=`${axis}-${ring}`,[cx,cy]=CENTERS[axis];
+    return slots.filter(s=>s.members.includes(k)).sort((p,q)=>Math.atan2(p.y-cy,p.x-cx)-Math.atan2(q.y-cy,q.x-cx));
   }
-  function render(){renderCube();renderGraph();const solved=isSolved();document.querySelector('#moveCount').textContent=moves;document.querySelector('#uniqueCount').textContent=seen.size;document.querySelector('#depthCount').textContent=history.length-1;document.querySelector('#undoBtn').disabled=history.length<=1;document.querySelector('#statusDot').classList.toggle('solved',solved);document.querySelector('#statusText').textContent=solved?'Solved state':'Searching…'}
-  function reset(silent=false){cubies=makeSolved();history=[{state:cloneState(cubies),move:'start'}];seen=new Set([keyOf()]);knownSolution=[];moves=0;routeShown=false;document.querySelector('#knownRoute').textContent='Route hidden';render();if(!silent)flash('Returned to the solved vertex')}
-  function inverse(t){return t.includes('2')?t:t.includes("'")?t[0]:t+"'"}
+  function turn(axis,ring,prime=false,record=true){
+    const d=defFor(axis,ring),list=ringSlots(axis,ring),old=list.map(s=>s.color),shift=(prime?-d.q:d.q)*3,n=list.length;
+    for(let i=0;i<n;i++)list[(i+shift+n)%n].color=old[i];
+    moves++;seen.add(key());if(record)history.push({colors:snapshot(),name:d.name+(prime?"'":'')});render();
+    if(solved())flash('Solved');
+  }
+  function render(){
+    let svg='<rect width="640" height="640" fill="#fff" rx="14"/>';
+    for(let a=0;a<3;a++)for(let r=0;r<3;r++){const d=defFor(a,r);svg+=`<g data-a="${a}" data-r="${r}"><circle class="ring-hit" cx="${CENTERS[a][0]}" cy="${CENTERS[a][1]}" r="${RADII[r]}"><title>${d.name} ring</title></circle><circle class="ring" cx="${CENTERS[a][0]}" cy="${CENTERS[a][1]}" r="${RADII[r]}" stroke="${LINE[a]}99"/></g>`;}
+    for(const s of slots)svg+=`<circle class="bead" cx="${s.x.toFixed(2)}" cy="${s.y.toFixed(2)}" r="8.5" fill="${s.color}"><title>${s.face} group</title></circle>`;
+    for(let a=0;a<3;a++)svg+=`<text class="family-label" x="${CENTERS[a][0]}" y="${CENTERS[a][1]+4}" text-anchor="middle">${FAMILY_NAMES[a]}</text>`;
+    const groups={};for(const s of slots)(groups[s.face]??=[]).push(s);
+    for(const [face,list] of Object.entries(groups)){const x=list.reduce((n,s)=>n+s.x,0)/9,y=list.reduce((n,s)=>n+s.y,0)/9;svg+=`<text class="face-label" x="${x}" y="${y-22}" text-anchor="middle">${face}</text>`;}
+    board.innerHTML=svg;
+    board.querySelectorAll('[data-a]').forEach(g=>{const h=g.querySelector('.ring-hit'),a=+g.dataset.a,r=+g.dataset.r;h.onclick=e=>turn(a,r,e.shiftKey);h.oncontextmenu=e=>{e.preventDefault();turn(a,r,true)}});
+    document.querySelector('#moves').textContent=moves;document.querySelector('#seen').textContent=seen.size;document.querySelector('#wrong').textContent=wrong();document.querySelector('#undo').disabled=history.length<=1;document.querySelector('#status').textContent=solved()?'Solved':'Mixed';
+  }
+  function reset(silent=false){slots=makeSlots();moves=0;history=[{colors:snapshot(),name:'start'}];seen=new Set([key()]);known=[];routeShown=false;document.querySelector('#route').textContent='Route hidden';document.querySelector('#routeBtn').textContent='Reveal return route';render();if(!silent)flash('Reset')}
+  function undo(){if(history.length<=1)return;history.pop();restore(history.at(-1).colors);moves++;seen.add(key());render()}
   function scramble(){
-    reset(true);const len=+document.querySelector('#depth').value,faces=Object.keys(FACES),seq=[];let last='';
-    for(let i=0;i<len;i++){const opts=faces.filter(f=>f!==last);const f=opts[Math.floor(Math.random()*opts.length)],suffix=['',"'",'2'][Math.floor(Math.random()*3)];seq.push(f+suffix);last=f}
-    for(const t of seq)applyMove(t,false);knownSolution=seq.slice().reverse().map(inverse);moves=0;history=[{state:cloneState(cubies),move:'scramble'}];seen=new Set([keyOf()]);routeShown=false;document.querySelector('#knownRoute').textContent='Route hidden';render();flash(`${len}-move scramble ready`)
+    reset(true);const count=+document.querySelector('#depth').value,seq=[];let last='';
+    for(let i=0;i<count;i++){let d,k;do{d=DEFS[Math.floor(Math.random()*DEFS.length)];k=`${d.axis}-${d.ring}`}while(k===last);last=k;const prime=Math.random()<.5;seq.push({d,prime});turn(d.axis,d.ring,prime,false)}
+    known=seq.slice().reverse().map(x=>({d:x.d,prime:!x.prime}));history=[{colors:snapshot(),name:'scramble'}];moves=0;seen=new Set([key()]);render();flash(`${count}-move scramble ready`);
   }
-  function rewind(i){if(i<0||i>=history.length)return;cubies=cloneState(history[i].state);history=history.slice(0,i+1);moves++;seen.add(keyOf());render();flash(`Rewound to depth ${i}`)}
-  function undo(){if(history.length<=1)return;history.pop();cubies=cloneState(history.at(-1).state);moves++;render()}
-  function flash(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(flash.t);flash.t=setTimeout(()=>toast.classList.remove('show'),1800)}
-  for(const f of Object.keys(FACES)){for(const suffix of ['',"'"]){const t=f+suffix,b=document.createElement('button');b.type='button';b.className='move';b.dataset.move=t;b.innerHTML=`${f}${suffix?'<span class="prime">′</span>':''}<small>${suffix?'counter-clockwise':'clockwise'}</small>`;document.querySelector('#moveGrid').appendChild(b)}}
-  document.querySelector('#moveGrid').addEventListener('click',e=>{const b=e.target.closest('[data-move]');if(b)applyMove(b.dataset.move)});
-  document.querySelector('#undoBtn').onclick=undo;document.querySelector('#resetBtn').onclick=()=>reset();document.querySelector('#scrambleBtn').onclick=scramble;
-  document.querySelector('#depth').oninput=e=>document.querySelector('#depthOut').value=e.target.value;
-  document.querySelector('#routeBtn').onclick=()=>{routeShown=!routeShown;document.querySelector('#knownRoute').textContent=routeShown?(knownSolution.join('  ')||'Scramble first'):'Route hidden';document.querySelector('#routeBtn').textContent=routeShown?'Hide known return route':'Reveal a known return route'};
-  document.addEventListener('keydown',e=>{if(/^(INPUT|BUTTON)$/.test(e.target.tagName))return;const f=e.key.toUpperCase();if(FACES[f])applyMove(f+(e.shiftKey?"'":''));if(e.key==='Backspace'){e.preventDefault();undo()}});
-  const stage=document.querySelector('#stage');stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vx:viewX,vy:viewY};stage.setPointerCapture(e.pointerId)});stage.addEventListener('pointermove',e=>{if(!drag)return;viewY=drag.vy+(e.clientX-drag.x)*.45;viewX=Math.max(-80,Math.min(80,drag.vx-(e.clientY-drag.y)*.45));renderCube()});stage.addEventListener('pointerup',()=>drag=null);stage.addEventListener('pointercancel',()=>drag=null);
-  function registerTools(){const ctx=document.modelContext;if(!ctx?.registerTool)return;const safeMoves={type:'array',items:{type:'string',enum:['U',"U'",'U2','D',"D'",'D2','L',"L'",'L2','R',"R'",'R2','F',"F'",'F2','B',"B'",'B2']},maxItems:100};ctx.registerTool({name:'apply_cube_moves',title:'Apply cube moves',description:'Apply a sequence of standard face turns to the visible 3×3 cube.',inputSchema:{type:'object',properties:{moves:safeMoves},required:['moves'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:({moves})=>{if(!Array.isArray(moves))throw new Error('moves must be an array');moves.forEach(t=>applyMove(t));return{applied:moves,state:isSolved()?'solved':'unsolved',depth:history.length-1}}});ctx.registerTool({name:'start_cube_scramble',title:'Start cube scramble',description:'Generate a new scramble of the chosen length.',inputSchema:{type:'object',properties:{length:{type:'integer',minimum:3,maximum:20}},required:['length'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:({length})=>{if(!Number.isInteger(length)||length<3||length>20)throw new Error('length must be 3 to 20');document.querySelector('#depth').value=length;document.querySelector('#depthOut').value=length;scramble();return{scramble_length:length,state:'unsolved'}}});ctx.registerTool({name:'read_cube_progress',title:'Read cube progress',description:'Read the visible cube status and graph-search path depth.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute:()=>({state:isSolved()?'solved':'unsolved',moves_made:moves,path_depth:history.length-1,unique_states:seen.size})})}
-  reset(true);registerTools();
+  function flash(t){const e=document.querySelector('#toast');e.textContent=t;e.classList.add('show');clearTimeout(flash.t);flash.t=setTimeout(()=>e.classList.remove('show'),1500)}
+  const families=document.querySelector('#families');
+  for(let a=0;a<3;a++){const box=document.createElement('div');box.className='family';box.innerHTML=`<div class="family-title"><b style="color:${LINE[a]}">${FAMILY_NAMES[a]}</b><span>inner · middle · outer</span></div>`;for(let r=0;r<3;r++){const d=defFor(a,r),row=document.createElement('div');row.className='move-row';row.innerHTML=`<div class="move-name"><b>${d.name}</b> · ${['inner','middle','outer'][r]}</div><button class="move">${d.name}′</button><button class="move">${d.name}</button>`;const b=row.querySelectorAll('button');b[0].onclick=()=>turn(a,r,true);b[1].onclick=()=>turn(a,r,false);box.appendChild(row)}families.appendChild(box)}
+  document.querySelector('#undo').onclick=undo;document.querySelector('#reset').onclick=()=>reset();document.querySelector('#scramble').onclick=scramble;document.querySelector('#depth').oninput=e=>document.querySelector('#depthOut').value=e.target.value;
+  document.querySelector('#routeBtn').onclick=()=>{routeShown=!routeShown;document.querySelector('#route').textContent=routeShown?(known.map(x=>x.d.name+(x.prime?"'":'')).join('  ')||'Scramble first'):'Route hidden';document.querySelector('#routeBtn').textContent=routeShown?'Hide return route':'Reveal return route'};
+  document.addEventListener('keydown',e=>{if(/^(INPUT|BUTTON)$/.test(e.target.tagName))return;const d=DEFS.find(x=>x.name===e.key.toUpperCase());if(d)turn(d.axis,d.ring,e.shiftKey)});
+  reset(true);
 })();
 </script>
-</body>
-</html>
+</body></html>
